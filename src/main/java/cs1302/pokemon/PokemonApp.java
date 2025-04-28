@@ -97,19 +97,65 @@ public class PokemonApp extends Application {
     } // stop
 
     public Data apiRequest() {
-        URI url = URI.create("https://api.pokemontcg.io/v2/cards?q=name:gardevoir");
+        URI url = URI.create("https://api.pokemontcg.io/v2/cards?q=name:" +
+                             searchBar.getText());
 
-        HttpRequest request = HttpRequest.newBuilder().uri(url).build();
+        HttpRequest request = HttpRequest.newBuilder()
+            .header("X-Api-Key","c2566a44-fab6-4a73-8fbd-45cc9b93a2df")
+            .uri(url).build();
+        Data resp = null;
         try {
             HttpResponse<String> response = HTTP_CLIENT
                 .<String>send(request, BodyHandlers.ofString());
             String json = response.body();
-            Data resp = GSON.<Data>fromJson(json, Data.class);
-            return resp;
+            resp = GSON.<Data>fromJson(json, Data.class);
         } catch (Exception e) {
             System.out.println(e);
         } // try
-        return null;
+        int type = 0;
+        System.out.println(resp.data[0].types[0]);
+        if (resp.data[0].types[0].equalsIgnoreCase("normal")) {
+            type = 1;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("fighting")) {
+            type = 2;
+        } else if(resp.data[0].types[0].equalsIgnoreCase("flying")) {
+            type = 3;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("poison")) {
+            type = 4;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("ground")) {
+            type = 5;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("rock")) {
+            type = 6;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("bug")) {
+            type = 7;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("ghost")) {
+            type = 8;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("steel")) {
+            type = 9;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("fire")) {
+            type = 10;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("water")) {
+            type = 11;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("grass")) {
+            type = 12;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("lightning")) {
+            type = 13;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("psychic")) {
+            type = 14;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("ice")) {
+            type = 15;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("dragon")) {
+            type = 16;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("dark")) {
+            type = 17;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("fairy")) {
+            type = 18;
+        } else if (resp.data[0].types[0].equalsIgnoreCase("stellar")) {
+            type = 19;
+        } // if
+        System.out.println("Type: " + type);
+        URI url2 = URI.create("https://pokeapi.co/api/v2/type/");
+        return resp;
     } // apiRequest
 
     public void setInfo() {
