@@ -1,5 +1,7 @@
-cs1302/pokemon/PokemonDriver.class
-cs1302/pokemon/Data.class
 cs1302/pokemon/CardInfo.class
 cs1302/pokemon/Image.class
 cs1302/pokemon/PokemonApp.class
+cs1302/pokemon/TypeInfo.class
+cs1302/pokemon/PokemonDriver.class
+cs1302/pokemon/Data.class
+cs1302/pokemon/Language.class
