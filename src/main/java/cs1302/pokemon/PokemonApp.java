@@ -84,7 +84,10 @@ public class PokemonApp extends Application {
         this.stage.setScene(this.scene);
         this.stage.sizeToScene();
         this.stage.show();
-
+        stage.setMaxWidth(1270);
+        stage.setMaxHeight(700);
+        stage.setMinWidth(500);
+        stage.setMinHeight(500);
         //for now
         EventHandler<ActionEvent> api = (ActionEvent ae) -> {
             setInfo();
@@ -154,7 +157,7 @@ public class PokemonApp extends Application {
             type = 19;
         } // if
         System.out.println("Type: " + type);
-        URI url2 = URI.create("https://pokeapi.co/api/v2/type/");
+        URI url2 = URI.create("https://pokeapi.co/api/v2/type/" + type);
         return resp;
     } // apiRequest
 
