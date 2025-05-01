@@ -54,7 +54,7 @@ public class PokemonApp extends Application {
     private TypeInfo typeInfo;
     private int currentPoke;
 
-    private String iurl = "https://coffective.com/wp-content/uploads/2018/06/default-featured-image.png.jpg";
+    private String iurl = "https://www.freeiconspng.com/thumbs/pokeball-png/pokeball-transparent-png-2.png";
     private Image DEFAULT = new Image(iurl);
 
     public PokemonApp() {
@@ -98,6 +98,7 @@ public class PokemonApp extends Application {
         searchBar.setPromptText("Enter a Pokemon");
         leftArrow.setDisable(true);
         rightArrow.setDisable(true);
+        root.setStyle("-fx-background-color: lightblue;");
      } // init
 
     public void start(Stage stage) {
@@ -116,6 +117,7 @@ public class PokemonApp extends Application {
         //for now
         EventHandler<ActionEvent> api = (ActionEvent ae) -> {
             setInfo();
+            rightArrow.setDisable(false);
         }; // api
         enter.setOnAction(api);
 
@@ -154,51 +156,10 @@ public class PokemonApp extends Application {
         return resp;
     } // apiRequest
 
-    public TypeInfo typeRequest(Data resp) {
-        int type = 0;
-        System.out.println(resp.data[0].types[0]);
-        if (resp.data[0].types[0].equalsIgnoreCase("colorless")) {
-            type = 1;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("fighting")) {
-            type = 2;
-        } else if(resp.data[0].types[0].equalsIgnoreCase("flying")) {
-            type = 3;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("poison")) {
-            type = 4;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("ground")) {
-            type = 5;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("rock")) {
-            type = 6;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("bug")) {
-            type = 7;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("ghost")) {
-            type = 8;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("steel")) {
-            type = 9;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("fire")) {
-            type = 10;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("water")) {
-            type = 11;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("grass")) {
-            type = 12;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("lightning")) {
-            type = 13;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("psychic")) {
-            type = 14;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("ice")) {
-            type = 15;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("dragon")) {
-            type = 16;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("dark")) {
-            type = 17;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("fairy")) {
-            type = 18;
-        } else if (resp.data[0].types[0].equalsIgnoreCase("stellar")) {
-            type = 19;
-        } // if
-        System.out.println("Type: " + type);
-        URI url = URI.create("https://pokeapi.co/api/v2/type/" + type);
-
+    public TypeInfo typeRequest() {
+        System.out.println(dataInfo.data[currentPoke].types[0]);
+        System.out.println("Type: " + typeSet());
+        URI url = URI.create("https://pokeapi.co/api/v2/type/" + typeSet());
         HttpRequest request = HttpRequest.newBuilder()
             .uri(url).build();
         TypeInfo typeResp = null;
@@ -215,9 +176,8 @@ public class PokemonApp extends Application {
 
     public void setInfo() {
         dataInfo = apiRequest();
-        Image pokeImage = new Image(dataInfo.data[0].images.small);
-        typeInfo = typeRequest(dataInfo);
-        rightArrow.setDisable(false);
+        Image pokeImage = new Image(dataInfo.data[currentPoke].images.small);
+        typeInfo = typeRequest();
         imageView.setImage(pokeImage);
         typeInfoLabel.setText(typeInfo.names[7].name + " in Japanese: " + typeInfo.names[0].name
                               + " in Korean: " + typeInfo.names[1].name + " and in Chinese: "
@@ -246,9 +206,74 @@ public class PokemonApp extends Application {
         } // if
         setUpdated();
     } // leftButton
+
+
     private  void setUpdated() {
          Image pokeImage = new Image(dataInfo.data[currentPoke].images.small);
          imageView.setImage(pokeImage);
-         cardAmount.setText(currentPoke + " / " + (dataInfo.data.length - 1));
+          cardAmount.setText(currentPoke + " / " + (dataInfo.data.length - 1));
     } // setUpdated
+
+    public int typeSet() {
+        int type = 0;
+        if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("colorless")) {
+            type = 1;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("fighting")) {
+            type = 2;
+        } else if(dataInfo.data[currentPoke].types[0].equalsIgnoreCase("flying")) {
+            type = 3;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("poison")) {
+            type = 4;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("ground")) {
+            type = 5;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("rock")) {
+            type = 6;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("bug")) {
+            type = 7;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("ghost")) {
+            type = 8;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("steel")) {
+            type = 9;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("fire")) {
+            type = 10;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("water")) {
+            type = 11;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("grass")) {
+            type = 12;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("lightning")) {
+            type = 13;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("psychic")) {
+            type = 14;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("ice")) {
+            type = 15;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("dragon")) {
+            type = 16;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("darkness")) {
+            type = 17;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("fairy")) {
+            type = 18;
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("stellar")) {
+            type = 19;
+        } // if
+        return type;
+    } // typeSet
+
+
+    public Data pokedexRequest() {
+        currentPoke = 0;
+        URI url = URI.create("https://api.pokemontcg.io/v2/pokedex/1/");
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(url).build();
+        Data resp = null;
+        try {
+            HttpResponse<String> response = HTTP_CLIENT
+                .<String>send(request, BodyHandlers.ofString());
+            String json = response.body();
+            resp = GSON.<Data>fromJson(json, Data.class);
+        } catch (Exception e) {
+            System.out.println(e);
+        } // try
+        return resp;
+    } // apiRequest
+
 } // PokemonApp
