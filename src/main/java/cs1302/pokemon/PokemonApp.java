@@ -36,14 +36,23 @@ public class PokemonApp extends Application {
     private Stage stage;
     private Scene scene;
     private VBox root;
-    private HBox titleBox;
+    private VBox titleBox;
     private Label title;
+    private Label genInstruct;
     private HBox searchBox;
     private TextField searchBar;
     private Button enter;
     private Button random;
     private ImageView imageView;
     private VBox imageViewBox;
+    private Label typeInfoLabel;
+    private Label cardAmount;
+    private Button rightArrow;
+    private Button leftArrow;
+    private HBox buttonBox;
+    private Data dataInfo;
+    private TypeInfo typeInfo;
+    private int currentPoke;
 
     private String iurl = "https://coffective.com/wp-content/uploads/2018/06/default-featured-image.png.jpg";
     private Image DEFAULT = new Image(iurl);
@@ -52,27 +61,43 @@ public class PokemonApp extends Application {
         this.stage = null;
         this.scene = null;
         this.root = new VBox();
-        this.titleBox = new HBox();
+        this.titleBox = new VBox();
         this.title = new Label("Pokemon Information!");
         this.searchBox = new HBox();
-        this.searchBar = new TextField("Place holder");
+        this.searchBar = new TextField();
         this.enter = new Button("Enter");
         this.random = new Button("Random");
         this.imageView = new ImageView();
         this.imageViewBox = new VBox();
+        this.typeInfoLabel = new Label("Enter a pokemon or press random to start searching!");
+        this.genInstruct = new Label("Only generation 1 through generation 7 apply");
+        this.cardAmount = new Label("0 / 0");
+        this.rightArrow = new Button(">");
+        this.leftArrow = new Button("<");
+        this.buttonBox = new HBox();
+        this.currentPoke = 0;
     } // PokemonApp
 
     public void init() {
         System.out.println("running init");
         this.root.getChildren().addAll(titleBox,searchBox,imageViewBox);
-        this.titleBox.getChildren().addAll(title);
+        this.root.setSpacing(7);
+        this.titleBox.getChildren().addAll(title, genInstruct);
+        this.titleBox.setSpacing(7);
         this.searchBox.getChildren().addAll(searchBar, enter, random);
+        this.searchBox.setSpacing(5);
         titleBox.setAlignment(Pos.CENTER);
         searchBox.setAlignment(Pos.CENTER);
         imageViewBox.setAlignment(Pos.CENTER);
         imageView.setImage(DEFAULT);
-        imageViewBox.getChildren().addAll(imageView);
-
+        imageViewBox.getChildren().addAll(imageView, cardAmount, typeInfoLabel, buttonBox);
+        this.imageViewBox.setSpacing(7);
+        buttonBox.getChildren().addAll(leftArrow, rightArrow);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setSpacing(15);
+        searchBar.setPromptText("Enter a Pokemon");
+        leftArrow.setDisable(true);
+        rightArrow.setDisable(true);
      } // init
 
     public void start(Stage stage) {
@@ -93,6 +118,16 @@ public class PokemonApp extends Application {
             setInfo();
         }; // api
         enter.setOnAction(api);
+
+        EventHandler<ActionEvent> right = (ActionEvent ae) -> {
+            rightButton();
+        }; //right
+        rightArrow.setOnAction(right);
+
+        EventHandler<ActionEvent> left = (ActionEvent ae) -> {
+            leftButton();
+        }; // left
+        leftArrow.setOnAction(left);
     } // start
 
     public void stop() {
@@ -100,6 +135,7 @@ public class PokemonApp extends Application {
     } // stop
 
     public Data apiRequest() {
+        currentPoke = 0;
         URI url = URI.create("https://api.pokemontcg.io/v2/cards?q=name:" +
                              searchBar.getText());
 
@@ -115,9 +151,13 @@ public class PokemonApp extends Application {
         } catch (Exception e) {
             System.out.println(e);
         } // try
+        return resp;
+    } // apiRequest
+
+    public TypeInfo typeRequest(Data resp) {
         int type = 0;
         System.out.println(resp.data[0].types[0]);
-        if (resp.data[0].types[0].equalsIgnoreCase("normal")) {
+        if (resp.data[0].types[0].equalsIgnoreCase("colorless")) {
             type = 1;
         } else if (resp.data[0].types[0].equalsIgnoreCase("fighting")) {
             type = 2;
@@ -157,13 +197,58 @@ public class PokemonApp extends Application {
             type = 19;
         } // if
         System.out.println("Type: " + type);
-        URI url2 = URI.create("https://pokeapi.co/api/v2/type/" + type);
-        return resp;
-    } // apiRequest
+        URI url = URI.create("https://pokeapi.co/api/v2/type/" + type);
+
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(url).build();
+        TypeInfo typeResp = null;
+        try {
+            HttpResponse<String> response = HTTP_CLIENT
+                .<String>send(request, BodyHandlers.ofString());
+            String json = response.body();
+            typeResp = GSON.<TypeInfo>fromJson(json, TypeInfo.class);
+        } catch (Exception e) {
+            System.out.println(e);
+        } // try
+        return typeResp;
+    } // typeRequest
 
     public void setInfo() {
-        Data info = apiRequest();
-        Image pokeImage = new Image(info.data[0].images.small);
+        dataInfo = apiRequest();
+        Image pokeImage = new Image(dataInfo.data[0].images.small);
+        typeInfo = typeRequest(dataInfo);
+        rightArrow.setDisable(false);
         imageView.setImage(pokeImage);
+        typeInfoLabel.setText(typeInfo.names[7].name + " in Japanese: " + typeInfo.names[0].name
+                              + " in Korean: " + typeInfo.names[1].name + " and in Chinese: "
+                              + typeInfo.names[2].name);
+        cardAmount.setText("0 / " + (dataInfo.data.length - 1));
     } // setInfo
+
+    public void rightButton() {
+        currentPoke += 1;
+        if (currentPoke == dataInfo.data.length - 1) {
+            rightArrow.setDisable(true);
+        } // if
+        if (leftArrow.isDisabled()) {
+            leftArrow.setDisable(false);
+        } // if
+        setUpdated();
+    } // rightButton
+
+    public void leftButton() {
+        currentPoke -= 1;
+        if (currentPoke == 0) {
+            leftArrow.setDisable(true);
+        } // if
+        if (rightArrow.isDisabled()) {
+            rightArrow.setDisable(false);
+        } // if
+        setUpdated();
+    } // leftButton
+    private  void setUpdated() {
+         Image pokeImage = new Image(dataInfo.data[currentPoke].images.small);
+         imageView.setImage(pokeImage);
+         cardAmount.setText(currentPoke + " / " + (dataInfo.data.length - 1));
+    } // setUpdated
 } // PokemonApp
