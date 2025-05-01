@@ -1,5 +1,5 @@
 package cs1302.pokemon;
 
 public class PokemonSpecies {
-    Pokemon pokemonName;
+    Pokemon pokemon_species;
 } // PokemonSpecies
