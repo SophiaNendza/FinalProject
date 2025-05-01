@@ -130,6 +130,12 @@ public class PokemonApp extends Application {
             leftButton();
         }; // left
         leftArrow.setOnAction(left);
+
+        EventHandler<ActionEvent> randomEvent = (ActionEvent ae) -> {
+            randomRequest();
+            rightArrow.setDisable(false);
+        }; // randomEvent
+        random.setOnAction(randomEvent);
     } // start
 
     public void stop() {
@@ -232,7 +238,7 @@ public class PokemonApp extends Application {
             type = 7;
         } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("ghost")) {
             type = 8;
-        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("steel")) {
+        } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("metal")) {
             type = 9;
         } else if (dataInfo.data[currentPoke].types[0].equalsIgnoreCase("fire")) {
             type = 10;
@@ -259,21 +265,28 @@ public class PokemonApp extends Application {
     } // typeSet
 
 
-    public Data pokedexRequest() {
+    public Pokedex pokedexRequest() {
         currentPoke = 0;
-        URI url = URI.create("https://api.pokemontcg.io/v2/pokedex/1/");
+        URI url = URI.create("https://pokeapi.co/api/v2/pokedex/1/");
         HttpRequest request = HttpRequest.newBuilder()
             .uri(url).build();
-        Data resp = null;
+        Pokedex resp = null;
         try {
             HttpResponse<String> response = HTTP_CLIENT
                 .<String>send(request, BodyHandlers.ofString());
             String json = response.body();
-            resp = GSON.<Data>fromJson(json, Data.class);
+            resp = GSON.<Pokedex>fromJson(json, Pokedex.class);
         } catch (Exception e) {
             System.out.println(e);
         } // try
         return resp;
     } // apiRequest
 
+    public void randomRequest() {
+        Pokedex pokedex = pokedexRequest();
+        int randomNum = (int)(Math.random() * 600);
+        String name = pokedex.pokemon_entries[randomNum].pokemon_species.name;
+        searchBar.setText(name);
+        setInfo();
+    } // randomRequest
 } // PokemonApp
