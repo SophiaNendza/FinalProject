@@ -23,6 +23,9 @@ import javafx.scene.layout.StackPane;
 import javafx.geometry.Pos;
 import javafx.event.EventHandler;
 import javafx.event.ActionEvent;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 public class PokemonApp extends Application {
 
@@ -53,7 +56,12 @@ public class PokemonApp extends Application {
     private Data dataInfo;
     private TypeInfo typeInfo;
     private int currentPoke;
-
+    private ProgressBar progress;
+    private HBox imageMew;
+    private ImageView mewIV;
+    private ImageView mewIV2;
+    private String mewUrl = "https://media4.giphy.com/media/IQebREsGFRXmo/200w.gif?cid=6c09b952iweixifp2x6fo3edlhfde53bz3x5lzqakr5q37zy&ep=v1_stickers_search&rid=200w.gif&ct=s";
+    private Image MEW = new Image(mewUrl);
     private String iurl = "https://www.freeiconspng.com/thumbs/pokeball-png/pokeball-transparent-png-2.png";
     private Image DEFAULT = new Image(iurl);
 
@@ -76,10 +84,13 @@ public class PokemonApp extends Application {
         this.leftArrow = new Button("<");
         this.buttonBox = new HBox();
         this.currentPoke = 0;
+        this.progress = new ProgressBar();
+        this.mewIV = new ImageView();
+        this.mewIV2 = new ImageView();
+        this.imageMew = new HBox();
     } // PokemonApp
 
     public void init() {
-        System.out.println("running init");
         this.root.getChildren().addAll(titleBox,searchBox,imageViewBox);
         this.root.setSpacing(7);
         this.titleBox.getChildren().addAll(title, genInstruct);
@@ -90,8 +101,18 @@ public class PokemonApp extends Application {
         searchBox.setAlignment(Pos.CENTER);
         imageViewBox.setAlignment(Pos.CENTER);
         imageView.setImage(DEFAULT);
-        imageViewBox.getChildren().addAll(imageView, cardAmount, typeInfoLabel, buttonBox);
+        imageViewBox.getChildren().addAll(imageMew, cardAmount,
+                                          typeInfoLabel, buttonBox, progress);
         this.imageViewBox.setSpacing(7);
+        progress.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        progress.setVisible(false);
+        progress.setPrefWidth(300);
+        this.imageMew.getChildren().addAll(mewIV,imageView, mewIV2);
+        imageMew.setAlignment(Pos.CENTER);
+        imageMew.setSpacing(40);
+        mewIV.setImage(MEW);
+        mewIV2.setImage(MEW);
+        mewIV.setScaleX(-1);
         buttonBox.getChildren().addAll(leftArrow, rightArrow);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.setSpacing(15);
@@ -102,7 +123,6 @@ public class PokemonApp extends Application {
      } // init
 
     public void start(Stage stage) {
-        System.out.println("running start");
         this.stage = stage;
         this.scene = new Scene(this.root, 1200, 720);
         this.stage.setOnCloseRequest(event -> Platform.exit());
@@ -112,12 +132,11 @@ public class PokemonApp extends Application {
         this.stage.show();
         stage.setMaxWidth(1270);
         stage.setMaxHeight(700);
-        stage.setMinWidth(500);
-        stage.setMinHeight(500);
+        stage.setMinWidth(800);
+        stage.setMinHeight(600);
         //for now
         EventHandler<ActionEvent> api = (ActionEvent ae) -> {
-            setInfo();
-            rightArrow.setDisable(false);
+            runNow(() -> setInfo());
         }; // api
         enter.setOnAction(api);
 
@@ -132,20 +151,21 @@ public class PokemonApp extends Application {
         leftArrow.setOnAction(left);
 
         EventHandler<ActionEvent> randomEvent = (ActionEvent ae) -> {
-            randomRequest();
-            rightArrow.setDisable(false);
+            runNow(() -> randomRequest());
+
         }; // randomEvent
         random.setOnAction(randomEvent);
     } // start
 
     public void stop() {
-        System.out.println("running stop");
+
     } // stop
 
     public Data apiRequest() {
+        Platform.runLater(() -> progress.setVisible(true));
         currentPoke = 0;
         URI url = URI.create("https://api.pokemontcg.io/v2/cards?q=name:" +
-                             searchBar.getText());
+                             searchBar.getText().replaceAll("\\s+", ""));
 
         HttpRequest request = HttpRequest.newBuilder()
             .header("X-Api-Key","c2566a44-fab6-4a73-8fbd-45cc9b93a2df")
@@ -157,14 +177,13 @@ public class PokemonApp extends Application {
             String json = response.body();
             resp = GSON.<Data>fromJson(json, Data.class);
         } catch (Exception e) {
-            System.out.println(e);
+            alertPopUp(e);
         } // try
+        Platform.runLater(() -> progress.setVisible(false));
         return resp;
     } // apiRequest
 
     public TypeInfo typeRequest() {
-        System.out.println(dataInfo.data[currentPoke].types[0]);
-        System.out.println("Type: " + typeSet());
         URI url = URI.create("https://pokeapi.co/api/v2/type/" + typeSet());
         HttpRequest request = HttpRequest.newBuilder()
             .uri(url).build();
@@ -175,20 +194,27 @@ public class PokemonApp extends Application {
             String json = response.body();
             typeResp = GSON.<TypeInfo>fromJson(json, TypeInfo.class);
         } catch (Exception e) {
-            System.out.println(e);
+            alertPopUp(e);
         } // try
         return typeResp;
     } // typeRequest
 
     public void setInfo() {
         dataInfo = apiRequest();
+        if (dataInfo.data == null || dataInfo.data.length == 0) {
+            Platform.runLater(() -> alertPopUp(new NullPointerException()));
+        } else {
         Image pokeImage = new Image(dataInfo.data[currentPoke].images.small);
         typeInfo = typeRequest();
         imageView.setImage(pokeImage);
-        typeInfoLabel.setText(typeInfo.names[7].name + " in Japanese: " + typeInfo.names[0].name
-                              + " in Korean: " + typeInfo.names[1].name + " and in Chinese: "
-                              + typeInfo.names[2].name);
-        cardAmount.setText("0 / " + (dataInfo.data.length - 1));
+        Platform.runLater(() -> typeInfoLabel.setText(typeInfo.names[7].name
+                                                      + " in Japanese: " + typeInfo.names[0].name
+                                                      + " in Korean: " + typeInfo.names[1].name
+                                                      + " and in Chinese: "
+                                                      + typeInfo.names[2].name));
+        Platform.runLater(() -> cardAmount.setText("0 / " + (dataInfo.data.length - 1)));
+         rightArrow.setDisable(false);
+        } // if
     } // setInfo
 
     public void rightButton() {
@@ -217,7 +243,7 @@ public class PokemonApp extends Application {
     private  void setUpdated() {
          Image pokeImage = new Image(dataInfo.data[currentPoke].images.small);
          imageView.setImage(pokeImage);
-          cardAmount.setText(currentPoke + " / " + (dataInfo.data.length - 1));
+         cardAmount.setText(currentPoke + " / " + (dataInfo.data.length - 1));
     } // setUpdated
 
     public int typeSet() {
@@ -277,7 +303,7 @@ public class PokemonApp extends Application {
             String json = response.body();
             resp = GSON.<Pokedex>fromJson(json, Pokedex.class);
         } catch (Exception e) {
-            System.out.println(e);
+            Platform.runLater(() -> alertPopUp(new Exception()));
         } // try
         return resp;
     } // apiRequest
@@ -288,5 +314,29 @@ public class PokemonApp extends Application {
         String name = pokedex.pokemon_entries[randomNum].pokemon_species.name;
         searchBar.setText(name);
         setInfo();
+        rightArrow.setDisable(false);
     } // randomRequest
+
+    public void runNow(Runnable target) {
+        Thread task = new Thread(target);
+        task.setDaemon(true);
+        task.start();
+    } // runNow
+
+    public void alertPopUp(Exception e) {
+        Alert alert = new Alert(AlertType.ERROR);
+        Platform.runLater(() -> progress.setVisible(false));
+        alert.setTitle("Error");
+        alert.setContentText(searchBar.getText() + " is not a valid pokemon. Please try again");
+        String pokemonUrl = "https://static1.thegamerimages.com";
+        String other = "/wordpress/wp-content/uploads/2020/08/Angry-Jigglypuff-Pokemon-Anime.jpeg";
+        Image madPokemon = new Image(pokemonUrl + other);
+        ImageView madiv = new ImageView();
+        madiv.setImage(madPokemon);
+        madiv.setFitHeight(150);
+        madiv.setFitWidth(250);
+        alert.setGraphic(madiv);
+        alert.showAndWait();
+    } // alertPopUp
+
 } // PokemonApp
