@@ -219,6 +219,10 @@ public class PokemonApp extends Application {
 
     public void rightButton() {
         currentPoke += 1;
+        if (dataInfo.data == null) {
+            alertPopUp(new Exception());
+            return;
+        }
         if (currentPoke == dataInfo.data.length - 1) {
             rightArrow.setDisable(true);
         } // if
@@ -309,6 +313,7 @@ public class PokemonApp extends Application {
     } // apiRequest
 
     public void randomRequest() {
+        leftArrow.setDisable(true);
         Pokedex pokedex = pokedexRequest();
         int randomNum = (int)(Math.random() * 600);
         String name = pokedex.pokemon_entries[randomNum].pokemon_species.name;
