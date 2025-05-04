@@ -16,7 +16,7 @@ Markdown is transformed into nice-looking HTML.
 > instead of leaving the license information blank.
 
 * mewUrl
-  - `src/main/java/cs1302/pokemon/PokemonApp.java`
+  - `resources/mew.gif`
   - Giphy. 2025
   - https://media4.giphy.com/media/IQebREsGFRXmo/200w.gif?cid=6c09b952iweixifp2x6fo3edlhfde53bz3x5lzqakr5q37zy&ep=v1_stickers_search&rid=200w.gif&ct=s
   - Assumed proprietary: using under academic fair use.

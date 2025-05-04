@@ -64,20 +64,14 @@ public class PokemonApp extends Application {
     private HBox imageMew;
     private ImageView mewIV;
     private ImageView mewIV2;
-    private String mewUrl = "https://media4.giphy.com/media/" +
-        "IQebREsGFRXmo/200w.gif?cid=6c09b952iweixifp2x6fo3edlhfde53b" +
-        "z3x5lzqakr5q37zy&ep=v1_stickers_search&rid=200w.gif&ct=s";
-    private final Image mew = new Image(mewUrl);
-    private String iurl = "https://www.freeiconspng.com/thumbs" +
-        "/pokeball-png/pokeball-transparent-png-2.png";
-    private final Image defaultImage = new Image(iurl);
+    private final Image mew = new Image("file:resources/mew.gif");
+    private final Image defaultImage = new Image("file:resources/pokeball.png");
 
     /**
      * Constructor which creates all the instance variables.
      */
 
     public PokemonApp() {
-        System.out.println(iurl);
         this.stage = null;
         this.scene = null;
         this.root = new VBox();
@@ -393,6 +387,16 @@ public class PokemonApp extends Application {
         Pokedex pokedex = pokedexRequest();
         int randomNum = (int)(Math.random() * 600);
         String name = pokedex.pokemonEntries[randomNum].pokemonSpecies.name;
+        boolean valid = false;
+        while (!valid) {
+            if (name.contains(" ") || name.contains("-") || name.contains(".")) {
+                name = pokedex.pokemonEntries[(int)(Math.random() * 600)]
+                    .pokemonSpecies.name;
+
+            } else {
+                valid = true;
+            }
+        } // while
         searchBar.setText(name);
         setInfo();
         rightArrow.setDisable(false);
